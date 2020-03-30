@@ -41,13 +41,25 @@ class SampleControllerTest {
 
 	@Test
 	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
-	void robCanAccessToMethod() throws Exception {
+	void robCanAccessToMethodWithAuthenticationMock() throws Exception {
 		mockMvc.perform(get("/method")).andExpect(content().string("Hey Rob, how are you?"));
 	}
 
 	@Test
 	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
-	void robCanAccessToEndpoint() throws Exception {
+	void robCanAccessToEndpointWithAuthenticationMock() throws Exception {
+		mockMvc.perform(get("/endpoint")).andExpect(content().string("You are granted with [ROLE_AUTHORIZED, ROLE_USER]."));
+	}
+
+	@Test
+	@WithMockAuthentication(useMock = false, name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	void robCanAccessToMethodWithAuthenticationStub() throws Exception {
+		mockMvc.perform(get("/method")).andExpect(content().string("Hey Rob, how are you?"));
+	}
+
+	@Test
+	@WithMockAuthentication(useMock = false, name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	void robCanAccessToEndpointWithAuthenticationStub() throws Exception {
 		mockMvc.perform(get("/endpoint")).andExpect(content().string("You are granted with [ROLE_AUTHORIZED, ROLE_USER]."));
 	}
 

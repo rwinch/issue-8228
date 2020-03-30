@@ -37,8 +37,15 @@ class SampleServiceTest {
 	}
 
 	@Test
-	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
-	void whenAnnotatedWithRoleAuthorizedThenGreetingIsReturned() {
+	@WithMockAuthentication(useMock = true, name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	void whenAnnotatedWithRoleAuthorizedWithMockThenGreetingIsReturned() {
+		final var who = TestSecurityContextHolder.getContext().getAuthentication();
+		assertEquals("Hello Rob!", sampleService.greet(who));
+	}
+
+	@Test
+	@WithMockAuthentication(useMock = false, name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	void whenAnnotatedWithRoleAuthorizedWithStubThenGreetingIsReturned() {
 		final var who = TestSecurityContextHolder.getContext().getAuthentication();
 		assertEquals("Hello Rob!", sampleService.greet(who));
 	}

@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,6 +48,8 @@ public @interface WithMockAuthentication {
 	String name() default "user";
 
 	String[] authorities() default { "ROLE_USER" };
+	
+	boolean useMock() default true;
 
 	@AliasFor(annotation = WithSecurityContext.class)
 	TestExecutionEvent setupBefore() default TestExecutionEvent.TEST_METHOD;
@@ -55,17 +58,71 @@ public @interface WithMockAuthentication {
 		@Override
 		public SecurityContext createSecurityContext(WithMockAuthentication annotation) {
 			final SecurityContext context = SecurityContextHolder.createEmptyContext();
-			context.setAuthentication(authentication(annotation));
+			context.setAuthentication(annotation.useMock() ? bogousAuthentication(annotation) : workingAuthentication(annotation));
 
 			return context;
 		}
 
-		public Authentication authentication(WithMockAuthentication annotation) {
+		public Authentication bogousAuthentication(WithMockAuthentication annotation) {
 			var auth = mock(Authentication.class);
 			when(auth.getName()).thenReturn(annotation.name());
 			when(auth.getAuthorities()).thenReturn((Collection) Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
 			when(auth.isAuthenticated()).thenReturn(true);
 			return auth;
+		}
+		
+		public Authentication workingAuthentication(WithMockAuthentication annotation) {
+		    return new TestAuthentication(
+		        annotation.name(), Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
+		}
+	}
+	
+	public static class TestAuthentication implements Authentication {
+		private static final long serialVersionUID = 1503468173338566812L;
+		
+		private final String name;
+		private final Collection<GrantedAuthority> authorities;
+		private boolean isAuthenticated = true;
+
+		public TestAuthentication(String name, Collection<GrantedAuthority> authorities) {
+			super();
+			this.name = name;
+			this.authorities = authorities;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Collection<? extends GrantedAuthority> getAuthorities() {
+			return authorities;
+		}
+
+		@Override
+		public Object getCredentials() {
+			return name;
+		}
+
+		@Override
+		public Object getDetails() {
+			return name;
+		}
+
+		@Override
+		public Object getPrincipal() {
+			return name;
+		}
+
+		@Override
+		public boolean isAuthenticated() {
+			return isAuthenticated;
+		}
+
+		@Override
+		public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+			this.isAuthenticated = isAuthenticated;
 		}
 	}
 }
