@@ -63,28 +63,29 @@ public @interface WithMockAuthentication {
 			return context;
 		}
 
-		public Authentication bogousAuthentication(WithMockAuthentication annotation) {
-			var auth = mock(Authentication.class);
-			when(auth.getName()).thenReturn(annotation.name());
-			when(auth.getAuthorities()).thenReturn((Collection) Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
-			when(auth.isAuthenticated()).thenReturn(true);
-			return auth;
-		}
-		
-		public Authentication workingAuthentication(WithMockAuthentication annotation) {
-		    return new TestAuthentication(
-		        annotation.name(), Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
-		}
+@SuppressWarnings({"unchecked", "rawtypes"})
+public Authentication bogousAuthentication(WithMockAuthentication annotation) {
+	var auth = mock(Authentication.class);
+	when(auth.getName()).thenReturn(annotation.name());
+	when(auth.getAuthorities()).thenReturn((Collection) Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
+	when(auth.isAuthenticated()).thenReturn(true);
+	return auth;
+}
+
+public Authentication workingAuthentication(WithMockAuthentication annotation) {
+    return new StubbedAuthentication(
+        annotation.name(), Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
+}
 	}
 	
-	public static class TestAuthentication implements Authentication {
+	public static class StubbedAuthentication implements Authentication {
 		private static final long serialVersionUID = 1503468173338566812L;
 		
 		private final String name;
 		private final Collection<GrantedAuthority> authorities;
 		private boolean isAuthenticated = true;
 
-		public TestAuthentication(String name, Collection<GrantedAuthority> authorities) {
+		public StubbedAuthentication(String name, Collection<GrantedAuthority> authorities) {
 			super();
 			this.name = name;
 			this.authorities = authorities;
