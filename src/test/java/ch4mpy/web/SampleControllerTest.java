@@ -48,7 +48,7 @@ class SampleControllerTest {
 	@Test
 	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
 	void robCanAccessToEndpoint() throws Exception {
-		mockMvc.perform(get("/endpoint")).andExpect(content().string("You are granted with [ROLE_USER, ROLE_AUTHORIZED]."));
+		mockMvc.perform(get("/endpoint")).andExpect(content().string("You are granted with [ROLE_AUTHORIZED, ROLE_USER]."));
 	}
 
 }

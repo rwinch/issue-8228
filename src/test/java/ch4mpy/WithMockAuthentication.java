@@ -12,15 +12,22 @@
  */
 package ch4mpy;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
@@ -34,11 +41,8 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 @WithSecurityContext(factory = WithMockAuthentication.Factory.class)
 public @interface WithMockAuthentication {
 
-	@AliasFor("authType")
-	Class<? extends Authentication> value() default Authentication.class;
-
-	@AliasFor("value")
-	Class<? extends Authentication> authType() default Authentication.class;
+	@AliasFor("authorities")
+	String[] value() default { "ROLE_USER" };
 
 	String name() default "user";
 
@@ -57,9 +61,11 @@ public @interface WithMockAuthentication {
 		}
 
 		public Authentication authentication(WithMockAuthentication annotation) {
-			return new MockAuthenticationBuilder<>(annotation.authType()).name(annotation.name())
-					.authorities(annotation.authorities())
-					.build();
+			var auth = mock(Authentication.class);
+			when(auth.getName()).thenReturn(annotation.name());
+			when(auth.getAuthorities()).thenReturn((Collection) Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
+			when(auth.isAuthenticated()).thenReturn(true);
+			return auth;
 		}
 	}
 }
