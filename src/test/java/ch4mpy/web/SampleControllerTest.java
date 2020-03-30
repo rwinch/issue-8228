@@ -1,6 +1,7 @@
 package ch4mpy.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -39,15 +40,15 @@ class SampleControllerTest {
 	}
 
 	@Test
-	@WithMockAuthentication(name = "rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
 	void robCanAccessToMethod() throws Exception {
-		mockMvc.perform(get("/method")).andExpect(status().isForbidden());
+		mockMvc.perform(get("/method")).andExpect(content().string("Hey Rob, how are you?"));
 	}
 
 	@Test
-	@WithMockAuthentication(name = "rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
+	@WithMockAuthentication(name = "Rob", authorities = { "ROLE_USER", "ROLE_AUTHORIZED" })
 	void robCanAccessToEndpoint() throws Exception {
-		mockMvc.perform(get("/endpoint")).andExpect(status().isForbidden());
+		mockMvc.perform(get("/endpoint")).andExpect(content().string("You are granted with [ROLE_USER, ROLE_AUTHORIZED]."));
 	}
 
 }
