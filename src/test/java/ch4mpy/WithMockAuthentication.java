@@ -66,6 +66,7 @@ public @interface WithMockAuthentication {
 @SuppressWarnings({"unchecked", "rawtypes"})
 public Authentication bogousAuthentication(WithMockAuthentication annotation) {
 	var auth = mock(Authentication.class);
+	when(auth.getPrincipal()).thenReturn("bogus");
 	when(auth.getName()).thenReturn(annotation.name());
 	when(auth.getAuthorities()).thenReturn((Collection) Stream.of(annotation.authorities()).map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
 	when(auth.isAuthenticated()).thenReturn(true);
